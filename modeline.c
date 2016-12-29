@@ -268,7 +268,7 @@ static void interpret_option(GeanyDocument *doc, gchar *opt)
 static void on_document_open(GObject *obj, GeanyDocument *doc, gpointer user_data)
 {
         scan_document(doc);
-        document_reload_file(doc, NULL);
+        document_reload_force(doc, doc->encoding);  // We set this in scan_document function
 }
 
 /**
