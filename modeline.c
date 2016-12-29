@@ -19,7 +19,7 @@ static void opt_wrap(GeanyDocument *doc, void *arg);
 static void opt_enc(GeanyDocument *doc, void *arg);
 
 #define debugf(fmt, ...) \
-        do { if (geany_data->app->debug_mode) printf(fmt, ## __VA_ARGS__); } while (0)
+        do { if (DEBUG_MODE) printf(fmt, ## __VA_ARGS__); } while (0)
 
 /**< Hook into geany */
 PluginCallback plugin_callbacks[] = {
@@ -50,15 +50,15 @@ struct mode_opt {
 
 /**< Define mode options, what type of argument it takes, and the callback */
 static struct mode_opt opts[] = {
-        { "expandtab",   "et", MODE_OPT_ARG_TRUE,  &opt_expand_tab },
-        { "noexpandtab", NULL, MODE_OPT_ARG_FALSE, &opt_expand_tab },
-        { "tabstop",     "ts", MODE_OPT_ARG_INT,   &opt_tab_stop },
-        { "softtabstop", "sts",MODE_OPT_ARG_INT,   &opt_tab_stop },
-        { "shiftwidth",  "sw", MODE_OPT_ARG_INT,   &opt_tab_stop },
-        { "wrap",        NULL, MODE_OPT_ARG_TRUE,  &opt_wrap },
-        { "nowrap",      NULL, MODE_OPT_ARG_FALSE, &opt_wrap },
+        { "expandtab",    "et",       MODE_OPT_ARG_TRUE,  &opt_expand_tab },
+        { "noexpandtab",  NULL,       MODE_OPT_ARG_FALSE, &opt_expand_tab },
+        { "tabstop",      "ts",       MODE_OPT_ARG_INT,   &opt_tab_stop },
+        { "softtabstop",  "sts",      MODE_OPT_ARG_INT,   &opt_tab_stop },
+        { "shiftwidth",   "sw",       MODE_OPT_ARG_INT,   &opt_tab_stop },
+        { "wrap",         NULL,       MODE_OPT_ARG_TRUE,  &opt_wrap },
+        { "nowrap",       NULL,       MODE_OPT_ARG_FALSE, &opt_wrap },
         { "fileencoding", "encoding", MODE_OPT_ARG_STR,   &opt_enc },
-        { NULL,          NULL, -1,                 NULL }
+        { NULL,           NULL,       -1,                 NULL }
 };
 
 /**< These are prefixes we search for to determine what is a modeline */
@@ -286,9 +286,9 @@ static void on_document_save(GObject *obj, GeanyDocument *doc, gpointer user_dat
  */
 static gboolean MLplugin_init(GeanyPlugin *plugin, gpointer data)
 {
-	geany_plugin = plugin;
-	geany_data = plugin->geany_data;
-	return TRUE;
+        geany_plugin = plugin;
+        geany_data = plugin->geany_data;
+        return TRUE;
 }
 
 /**
@@ -304,14 +304,14 @@ void MLplugin_cleanup(GeanyPlugin *plugin, gpointer data)
 G_MODULE_EXPORT
 void geany_load_module(GeanyPlugin *plugin)
 {
-	plugin->info->name = _("Modeline");
-	plugin->info->description = _("Detect modelines for code formatting");
-	plugin->info->version = "1.0";
-	plugin->info->author = "Matt Hayes <nobomb@gmail.com>";
+        plugin->info->name = _("Modeline");
+        plugin->info->description = _("Detect modelines for code formatting");
+        plugin->info->version = "1.0";
+        plugin->info->author = "Matt Hayes <nobomb@gmail.com>";
 
-	plugin->funcs->init = MLplugin_init;
-	plugin->funcs->cleanup = MLplugin_cleanup;
-	plugin->funcs->callbacks = plugin_callbacks;
+        plugin->funcs->init = MLplugin_init;
+        plugin->funcs->cleanup = MLplugin_cleanup;
+        plugin->funcs->callbacks = plugin_callbacks;
 
-	GEANY_PLUGIN_REGISTER(plugin, 225);
+        GEANY_PLUGIN_REGISTER(plugin, 225);
 }
