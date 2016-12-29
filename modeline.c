@@ -1,4 +1,4 @@
-// vim: expandtab:ts=8
+// vim: expandtab:ts=8:encoding=UTF-8
 
 #include "geanyplugin.h"
 
@@ -57,7 +57,7 @@ static struct mode_opt opts[] = {
         { "shiftwidth",  "sw", MODE_OPT_ARG_INT,   &opt_tab_stop },
         { "wrap",        NULL, MODE_OPT_ARG_TRUE,  &opt_wrap },
         { "nowrap",      NULL, MODE_OPT_ARG_FALSE, &opt_wrap },
-        { "fileencoding",NULL, MODE_OPT_ARG_STR,   &opt_enc },
+        { "fileencoding", "encoding", MODE_OPT_ARG_STR,   &opt_enc },
         { NULL,          NULL, -1,                 NULL }
 };
 
