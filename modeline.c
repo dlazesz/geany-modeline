@@ -6,11 +6,6 @@
 
 GeanyPlugin *geany_plugin;
 GeanyData *geany_data;
-GeanyFunctions *geany_functions;
-
-PLUGIN_VERSION_CHECK(150);
-PLUGIN_SET_INFO("Modeline", "Detect modelines for code formatting", "1.0",
-                "Matt Hayes <nobomb@gmail.com>");
 
 static void scan_document(GeanyDocument *doc);
 static void parse_options(GeanyDocument *doc, gchar *buf);
@@ -28,8 +23,8 @@ static void opt_enc(GeanyDocument *doc, void *arg);
 
 /**< Hook into geany */
 PluginCallback plugin_callbacks[] = {
-        { "document-open", G_CALLBACK(on_document_open), TRUE, NULL },
-        { "document-save", G_CALLBACK(on_document_save), TRUE, NULL },
+        { "document-open", (GCallback) &on_document_open, TRUE, NULL },
+        { "document-save", (GCallback) &on_document_save, TRUE, NULL },
         { NULL, NULL, FALSE, NULL }
 };
 
@@ -133,18 +128,15 @@ static void opt_wrap(GeanyDocument *doc, void *arg)
                                (*iarg) ? SC_WRAP_WORD : SC_WRAP_NONE, 0);
 }
 
-/* XXX */
-extern GeanyEncodingIndex encodings_get_idx_from_charset(const gchar *charset);
 static void opt_enc(GeanyDocument *doc, void *arg)
 {
         const gchar *str = arg;
-        GeanyEncodingIndex idx;
 
-        /* NOTE: encodings_get_idx_from_charset() defaults to UTF-8 when parsing fails */
-        idx = encodings_get_idx_from_charset(str);
-        debugf("opt_enc: \"%s\". Setting \"%s\"\n", str, encodings_get_charset_from_index(idx));
+        debugf("opt_enc: \"%s\"\n", str);
 
-        document_set_encoding(doc, encodings_get_charset_from_index(idx));
+        document_set_encoding(doc, str);
+
+        debugf("Setting \"%s\"\n", doc->encoding);
 }
 
 /**
@@ -290,13 +282,31 @@ static void on_document_save(GObject *obj, GeanyDocument *doc, gpointer user_dat
  *
  * @param
  */
-void plugin_init(GeanyData *data)
+static gboolean MLplugin_init(GeanyPlugin *plugin, gpointer data)
 {
+	geany_plugin = plugin;
+	geany_data = plugin->geany_data;
+	return TRUE;
 }
 
 /**
  * @brief Plugin cleanup
  */
-void plugin_cleanup(void)
+void MLplugin_cleanup(GeanyPlugin *plugin, gpointer data)
 {
+}
+
+G_MODULE_EXPORT
+void geany_load_module(GeanyPlugin *plugin)
+{
+	plugin->info->name = _("Modeline");
+	plugin->info->description = _("Detect modelines for code formatting");
+	plugin->info->version = "1.0";
+	plugin->info->author = "Matt Hayes <nobomb@gmail.com>";
+
+	plugin->funcs->init = MLplugin_init;
+	plugin->funcs->cleanup = MLplugin_cleanup;
+	plugin->funcs->callbacks = plugin_callbacks;
+
+	GEANY_PLUGIN_REGISTER(plugin, 225);
 }
