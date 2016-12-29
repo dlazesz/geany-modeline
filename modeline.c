@@ -128,6 +128,12 @@ static void opt_wrap(GeanyDocument *doc, void *arg)
                                (*iarg) ? SC_WRAP_WORD : SC_WRAP_NONE, 0);
 }
 
+/**
+ * @brief This sets specified file encoding
+ *
+ * @param doc Document
+ * @param arg encoding (gchar *)
+ */
 static void opt_enc(GeanyDocument *doc, void *arg)
 {
         const gchar *str = arg;
@@ -280,7 +286,8 @@ static void on_document_save(GObject *obj, GeanyDocument *doc, gpointer user_dat
 /**
  * @brief Plugin initialization
  *
- * @param
+ * @param plugin
+ * @param data
  */
 static gboolean MLplugin_init(GeanyPlugin *plugin, gpointer data)
 {
@@ -291,6 +298,9 @@ static gboolean MLplugin_init(GeanyPlugin *plugin, gpointer data)
 
 /**
  * @brief Plugin cleanup
+ *
+ * @param plugin
+ * @param data
  */
 void MLplugin_cleanup(GeanyPlugin *plugin, gpointer data)
 {
