@@ -105,7 +105,7 @@ static void opt_tab_stop(GeanyDocument *doc, void *arg)
 
         debugf("opt_tab_stop: %d\n", *iarg);
 
-        doc->editor->indent_width = *iarg;
+        editor_set_indent_width(doc->editor, *iarg);
         editor_set_indent_type(doc->editor, prefs->type);
 }
 
