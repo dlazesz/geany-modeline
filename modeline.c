@@ -180,28 +180,17 @@ static void scan_document(GeanyDocument *doc)
  */
 static void parse_options(GeanyDocument *doc, gchar *buf)
 {
-        gchar **tok, **sp, *str;
-        guint i, j;
+        gchar **tok;
+        guint i;
 
         debugf("modeline [%s]\n", buf);
 
-        tok = g_strsplit_set(buf, ": ", 0);
+        // XXX Spaces not allowed around = character...
+        // Can be separated by colon, space and comma
+        tok = g_strsplit_set(buf, ": ,", 0);  // tok[0] is the "comment sign" therefore omited
         for (i = 1; tok[i]; i++) {
-                str = g_strstrip(tok[i]);
-
-                // Not a 'set' list, throw the option to the option interpreter
-                if (g_ascii_strncasecmp(str, "set", 3)) {
-                        interpret_option(doc, str);
-                        continue;
-                }
-
-                // This is a 'set' list, split by spaces!
-                sp = g_strsplit(str, " ", 0);
-                for (j = 1; sp[j]; j++) {
-                        str = g_strstrip(sp[j]);
-                        interpret_option(doc, str);
-                }
-                g_strfreev(sp);
+                if (tok[i])  // Skip empty parts
+                        interpret_option(doc, tok[i]);
         }
         g_strfreev(tok);
 }
@@ -214,47 +203,53 @@ static void parse_options(GeanyDocument *doc, gchar *buf)
  */
 static void interpret_option(GeanyDocument *doc, gchar *opt)
 {
-        gchar **kv, *key;
+        gchar **kv, *key, *val;
         guint i;
         gint iarg;
 
         debugf("interpret [%s]\n", opt);
 
-        if (!(kv = g_strsplit(opt, "=", 0)))
-                return;
+        if ((kv = g_strsplit(opt, "=", 2))) {
+                key = kv[0];
+                val = kv[1];
+                if (!key || !val) {
+                        g_strfreev(kv);
+                        return;  // Starts or ends with = character
+                }
+        } else {
+                key = opt;
+                val = NULL;
+        }
 
-        key = g_strstrip(kv[0]);
         for (i = 0; opts[i].name; i++) {
-                if (g_ascii_strcasecmp(opts[i].name, key)) {
-                        if (!opts[i].alias)
-                                continue;
-                        if (g_ascii_strcasecmp(opts[i].alias, key))
-                                continue;
-                }
+                // name matched OR alias is not NULL AND mached else skip
+                if (!g_ascii_strcasecmp(opts[i].name, key) ||
+                        (opts[i].alias && !g_ascii_strcasecmp(opts[i].alias, key))) {
 
-                switch (opts[i].arg_type) {
-                case MODE_OPT_ARG_TRUE:
-                        iarg = 1;
-                        break;
-                case MODE_OPT_ARG_FALSE:
-                        iarg = 0;
-                        break;
-                case MODE_OPT_ARG_INT:
-                        if (!kv[1])
-                                return;
-                        iarg = g_ascii_strtoull(g_strstrip(kv[1]), NULL, 10);
-                        break;
-                case MODE_OPT_ARG_STR:
-                        if (!kv[1])
-                                return;
-                        opts[i].cb(doc, kv[1]);
-                        return;
-                default:
+                        switch (opts[i].arg_type) {
+                        case MODE_OPT_ARG_TRUE:
+                                iarg = 1;
+                                opts[i].cb(doc, &iarg);
+                                break;
+                        case MODE_OPT_ARG_FALSE:
+                                iarg = 0;
+                                opts[i].cb(doc, &iarg);
+                                break;
+                        case MODE_OPT_ARG_INT:
+                                if (val) {
+                                        iarg = g_ascii_strtoull(g_strstrip(val), NULL, 10);
+                                        opts[i].cb(doc, &iarg);
+                                }
+                                break;
+                        case MODE_OPT_ARG_STR:
+                                if (val)
+                                        opts[i].cb(doc, val);
+                                break;
+                        }
+
+                        g_strfreev(kv);
                         return;
                 }
-
-                opts[i].cb(doc, &iarg);
-                return;
         }
 }
 
